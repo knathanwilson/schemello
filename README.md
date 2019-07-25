@@ -16,12 +16,19 @@ def replaceme (text, **args): return '&'
 A bracket is is a special text that takes in between text to change them. You can use it to make easy formatting as shown below.
 ```python
 @scheme.bracket('BOLD')
-def replaceme (fullline, cut, text, **args): return text.replace(fullline, '<b>' + text + '</b>')
+def replaceme (fullline, cut, text, **args): return text.replace(fullline, '<b>' + cut + '</b>')
 ```
 
 ## singleline
-A singline, markup value.
+A single line, markup value.
 ```python
 @scheme.singleline('name')
 def replaceme (fullline, cut, text, **args): return text.replace(fullline, 'My name is ' + cut)
+```
+
+## body
+A full body object to interpret
+```python
+@scheme.body('description')
+def replaceme (name, scope, text, **args): return ''
 ```
