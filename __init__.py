@@ -2,6 +2,7 @@ import re
 
 bracket_key = '{0}(.*?){0}'
 singleline_key = '(\s+{0}\s+([^\n]+)\n)'
+body_key = '((\t*){0}\s+([^\n]+)\n)'
 
 class stage:
 	
@@ -96,9 +97,43 @@ class stage:
 	def singleline (this, word):
 		def wrap (func): return this._singleline(word, func)
 		return wrap
+	
+	def _body (this, word, func):
+		class body_wrapper:
+			def __init__ (self, func):
+				self.func = func
+				self.word = word
+				self.key = body_key.format(word)
+				this.mods.append(self)
+			def progress (self, text, **args): return len(re.findall(self.key, text)) == 0
+			def do (self, text, **args):
+				get = re.findall(self.key, text)
+				if get:
+					full, tabs, value = get[0]
+					tabs += '\t'
+					scope = ''
+					move = text.rfind(full) + len(full)
+					replace = full
+					remain = text[move:].split('\n')
+					for line in remain:
+						if line.startswith(tabs):
+							replace += line + '\n'
+							scope += line[len(tabs):] + '\n'
+							move += len(line) + 1
+						else: break
+					rest = text[move:]
+					out = text
+					for find in get: out = out.replace(replace, self.func(value, scope, text, **args))
+					return out
+				else: return text
+		return body_wrapper(func)
+	
+	def body (this, word):
+		def wrap (func): return this._body(word, func)
+		return wrap
 
 
-class schemer:
+class scheme:
 	
 	def __init__ (this): this.stages = []
 	
@@ -127,17 +162,7 @@ class schemer:
 	def singleline (this, word):
 		def wrap (func): return this._basestage()._singleline(word, func)
 		return wrap
-
-s = schemer()
-st = s._basestage()
-
-@s.singleline('name')
-def n  (full, line, text, **args): return 'moew'
-
-print(s('''
-name billy
-
-name bleh
-
-kakee
-'''))
+	
+	def body (this, word):
+		def wrap (func): return this._basestage()._body(word, func)
+		return wrap
