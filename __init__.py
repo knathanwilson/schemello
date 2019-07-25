@@ -67,7 +67,7 @@ class stage:
 					out = text
 					for find in get:
 						full = self.tag + find + self.tag
-						out = out.replace(full, self.func(full, find, text, **args))
+						out = out.replace(full, self.func(full, find, out, **args))
 					return out
 				else: return text
 		return bracket_wrapper(func)
@@ -89,7 +89,7 @@ class stage:
 				if get:
 					full, value = get[0]
 					out = text
-					for find in get: out = out.replace(full, self.func(full, value.strip(), text, **args))
+					for find in get: out = out.replace(full, self.func(full, value.strip(), out, **args))
 					return out
 				else: return text
 		return singleline_wrapper(func)
@@ -123,7 +123,7 @@ class stage:
 						else: break
 					rest = text[move:]
 					out = text
-					for find in get: out = out.replace(replace, self.func(value, scope, text, **args))
+					for find in get: out = out.replace(replace, self.func(value, scope, out, **args))
 					return out
 				else: return text
 		return body_wrapper(func)
@@ -131,7 +131,26 @@ class stage:
 	def body (this, word):
 		def wrap (func): return this._body(word, func)
 		return wrap
-
+	
+	def _pattern (this, key, func):
+		class pattern_wrapper:
+			def __init__ (self, func):
+				self.func = func
+				self.key = key
+				this.mods.append(self)
+			def progress (self, text, **args): return len(re.findall(self.key, text)) == 0
+			def do (self, text, **args):
+				out = text
+				get = re.findall(self.key, text)
+				for key in get:
+					full, word = key
+					out = out.replace(full, self.func(word, text, **args))
+				return out
+		return pattern_wrapper(func)
+	
+	def pattern (this, word):
+		def wrap (func): return this._pattern(word, func)
+		return wrap
 
 class scheme:
 	
