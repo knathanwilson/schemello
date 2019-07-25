@@ -4,7 +4,7 @@ from os import path
 
 setup(
 	name='schemello',
-	version='1.3.0',
+	version='.2',
 	description='A tool for building advanced text formatting functions.',
     url='https://github.com/knathanwilson/schemello',
     author='Nathaniel Wilson',
